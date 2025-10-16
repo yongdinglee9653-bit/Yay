@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>中秋抽奖后台</title>
+  <style>
+    body {
+      font-family: "Microsoft Yahei", sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #fdf6e3, #f8e1b8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+    }
+
+    h1 {
+      color: #d2691e;
+      font-size: 2.5em;
+      margin-top: 50px;
+      text-align: center;
+    }
+
+    #drawBtn {
+      padding: 15px 40px;
+      background: #d2691e;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 1.3em;
+      margin-top: 30px;
+      transition: transform 0.2s, background 0.2s;
+    }
+    #drawBtn:hover {
+      background: #a6530e;
+      transform: scale(1.05);
+    }
+
+    #winnerBox {
+      margin-top: 40px;
+      padding: 25px;
+      border: 3px solid #d2691e;
+      border-radius: 15px;
+      background: #fffaf0;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      display: none;
+    }
+
+    #winnerBox p {
+      font-size: 1.3em;
+      margin-bottom: 15px;
+    }
+
+    #winnerName {
+      font-size: 2em;
+      font-weight: bold;
+      color: #333;
+    }
+
+    #winnerVoucher {
+      font-size: 1.5em;
+      color: #555;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎯 中秋抽奖后台</h1>
+  <button id="drawBtn">随机抽奖</button>
+
+  <div id="winnerBox">
+    <p>🎉 恭喜中奖者：</p>
+    <div id="winnerName"></div>
+    <div id="winnerVoucher"></div>
+  </div>
+
+  <!-- ✅ Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+  <script>
+    // ✅ 替换为你的 Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyAO6aSX5jI5NIOT2SfHKVAeeeYiob4FUNs",
+      databaseURL: "https://i-want-556b4-default-rtdb.asia-southeast1.firebasedatabase.app/"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const drawBtn = document.getElementById('drawBtn');
+    const winnerBox = document.getElementById('winnerBox');
+    const winnerName = document.getElementById('winnerName');
+    const winnerVoucher = document.getElementById('winnerVoucher');
+
+    drawBtn.addEventListener('click', async () => {
+      const snapshot = await db.ref('entries').get();
+      if (!snapshot.exists()) {
+        alert('⚠️ 没有可抽的记录');
+        return;
+      }
+
+      const data = snapshot.val();
+      const keys = Object.keys(data);
+
+      const randomKey = keys[Math.floor(Math.random() * keys.length)];
+      const winner = data[randomKey];
+
+      winnerBox.style.display = 'block';
+      winnerName.textContent = winner.name;
+      winnerVoucher.textContent = `固本号码：${winner.voucher}`;
+
+      await db.ref('entries/' + randomKey).remove();
+      console.log(`✅ 已删除中奖者记录：${randomKey}`);
+    });
+  </script>
+</body>
+</html>
