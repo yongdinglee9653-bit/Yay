@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>中秋活动报名</title>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    body { font-family: "Microsoft YaHei", sans-serif; background: #f4f4f4; padding: 20px; text-align: center; }
+    .container { max-width: 400px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
+    h1 { margin-bottom: 10px; }
+    form { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+    input { padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px; }
+    button { padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    #qrcode { margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>🎉 中秋活动报名</h1>
+
+    <div id="qrcode"></div>
+
+    <form id="entryForm">
+      <input type="text" id="name" placeholder="姓名（必填）" required>
+      <input type="text" id="voucher" placeholder="固本号码（必填）" required>
+      <button type="submit">提交报名</button>
+    </form>
+
+    <p id="statusMsg"></p>
+  </div>
+
+  <script>
+    // ✅ Firebase 配置
+    const firebaseConfig = {
+      apiKey: "AIzaSyAO6aSX5jI5NIOT2SfHKVAeeeYiob4FUNs",
+      databaseURL: "https://i-want-556b4-default-rtdb.asia-southeast1.firebasedatabase.app/"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // ✅ 生成本页二维码
+    new QRCode(document.getElementById("qrcode"), {
+      text: window.location.href,
+      width: 150,
+      height: 150
+    });
+
+    // ✅ 表单提交 → 写入 Firebase
+    document.getElementById("entryForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const name = document.getElementById("name").value.trim();
+      const voucher = document.getElementById("voucher").value.trim();
+
+      if (!name || !voucher) {
+        alert("请填写所有必填项");
+        return;
+      }
+
+      db.ref("entries").push({
+        name: name,
+        voucher: voucher,
+        timestamp: Date.now()
+      }).then(() => {
+        document.getElementById("statusMsg").innerText = "✅ 报名成功！";
+        document.getElementById("entryForm").reset();
+      }).catch(err => {
+        console.error(err);
+        document.getElementById("statusMsg").innerText = "❌ 提交失败，请稍后再试";
+      });
+    });
+  </script>
+
+</body>
+</html>
